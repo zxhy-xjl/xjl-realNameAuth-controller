@@ -4,14 +4,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.zxhy.xjl.face.FaceService;
 import com.zxhy.xjl.notification.sms.SMS;
 import com.zxhy.xjl.notification.verifyCode.VerifyCode;
@@ -23,7 +22,6 @@ import com.zxhy.xjl.rna.controller.model.CheckIDModel;
 import com.zxhy.xjl.rna.controller.model.LogonModel;
 import com.zxhy.xjl.rna.controller.model.RegisterModel;
 import com.zxhy.xjl.rna.fileService.RealNameAuthFileService;
-import com.zxhy.xjl.rna.mapper.RealNameAuthMapper;
 import com.zxhy.xjl.rna.model.RealNameAuth;
 import com.zxhy.xjl.rna.service.RealNameAuthService;
 /**
@@ -55,7 +53,7 @@ public class RealNameAuthController {
 	private PeopleService peopleService;
 	@Autowired
 	private FaceService faceService;
-	@Autowired
+	@Autowired @Qualifier("RealNameAuthConfig")
 	private RealNameAuthConfig realNameAuthConfig;
 	/**
 	 * 1、发送验证码
@@ -76,7 +74,6 @@ public class RealNameAuthController {
 			 } else {
 				 log.debug("不使用短信发送验证码，默认验证码为:" + this.realNameAuthConfig.getDefaultVerifyCode());
 			 }
-			 
 			 String content="门户网站，" + code + "是您本次身份校验码，" + 2 + "分钟内有效．审批局工作人员绝不会向您索取此校验码，切勿告知他人．";
 			 if (this.realNameAuthConfig.isUseSMSSendVerifyCode()){
 				 this.sms.send(phone,content);//通过手机发送验证码; 

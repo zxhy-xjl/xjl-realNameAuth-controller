@@ -10,8 +10,9 @@
                         http://www.springframework.org/schema/mvc    
                         http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">  
     <!-- 自动扫描 -->  
-    <context:component-scan base-package="com.zxhy.xjl.rna"/>  
+    <context:component-scan base-package="com.zxhy.xjl.rna.controller"/>  
     <mvc:annotation-driven/>  
+    <bean id="RealNameAuthConfig" class="com.zxhy.xjl.rna.controller.RealNameAuthConfig"></bean>
     <!-- 1. 数据源 : DriverManagerDataSource -->  
     <bean id="dataSource"  
         class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
@@ -20,33 +21,16 @@
         <property name="username" value="xjlflow"/>  
         <property name="password" value="xjlflow"/>  
     </bean>  
-  
-    <!--  
-        2. mybatis的SqlSession的工厂: SqlSessionFactoryBean dataSource:引用数据源  
-  
-        MyBatis定义数据源,同意加载配置  
-    -->  
+    <!--2. mybatis的SqlSession的工厂: SqlSessionFactoryBean dataSource:引用数据源  -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
         <property name="dataSource" ref="dataSource"></property>  
         <property name="configLocation" value="classpath:mybatis-config.xml"></property>  
-    </bean>  
-  
-    <!--  
-        3. mybatis自动扫描加载Sql映射文件/接口 : MapperScannerConfigurer sqlSessionFactory  
-  
-        basePackage:指定sql映射文件/接口所在的包（自动扫描）  
-    -->  
-    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">  
-        <property name="basePackage" value="com.zxhy.xjl.rna.mapper"></property>  
-        <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>  
-    </bean>  
-  
-    <!-- 
-        4. 事务管理 : DataSourceTransactionManager dataSource:引用上面定义的数据源 
-    -->  
+    </bean>   
+    <!-- 3. mybatis自动扫描加载Sql映射文件/接口 : MapperScannerConfigurer sqlSessionFactory 
+        basePackage:指定sql映射文件/接口所在的包（自动扫描）  --> 
+    <!--4. 事务管理 : DataSourceTransactionManager dataSource:引用上面定义的数据源-->
     <bean id="txManager"  
         class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
         <property name="dataSource" ref="dataSource"></property>  
-    </bean> 
-    
+    </bean>    
 </beans>  
