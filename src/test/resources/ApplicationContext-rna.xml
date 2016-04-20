@@ -13,8 +13,10 @@
     <context:component-scan base-package="com.zxhy"/>  
     <mvc:annotation-driven/>  
     <!-- 实名认证模式配置 -->  
-    <bean id="realNameAuthConfig" class="com.zxhy.xjl.rna.business.RealNameAuthConfig" >  
+    <bean id="realNameAuthConfig" class="com.zxhy.xjl.rna.controller.RealNameAuthConfig" >  
         <property name="usePeopleIDCheck" value="false"/>  
-        <property name="useFaceCheck" value="false" />   
+        <property name="useFaceCheck" value="false" />  
+        <property name="useSMSSendVerifyCode" value="false"></property>
+        <property name="defaultVerifyCode" value="1234"></property> 
     </bean>
 </beans>  

@@ -1,5 +1,6 @@
 package com.zxhy.xjl.rna.controller;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,8 @@ public class RealNameAuthController {
 	private PeopleService peopleService;
 	@Autowired
 	private FaceService faceService;
-	
+	@Autowired
+	private RealNameAuthConfig realNameAuthConfig;
 	/**
 	 * 1、发送验证码
 	 * @param phone 手机号码
@@ -67,9 +69,21 @@ public class RealNameAuthController {
 		 RealNameAuth realNameAuth = this.realNameAuthService.findByPhone(phone);
 		//判断注册手机号码是否存在
 		 if(null==realNameAuth){
-			 String code=this.verifyCode.generate(phone,2);//产生随机四位验证码
+			 String code = this.realNameAuthConfig.getDefaultVerifyCode();
+			 if (this.realNameAuthConfig.isUseSMSSendVerifyCode()){
+				 log.debug("使用短信发送验证码，这里随机生成一个验证码");
+				 code=this.verifyCode.generate(phone,2);//产生随机四位验证码
+			 } else {
+				 log.debug("不使用短信发送验证码，默认验证码为:" + this.realNameAuthConfig.getDefaultVerifyCode());
+			 }
+			 
 			 String content="门户网站，" + code + "是您本次身份校验码，" + 2 + "分钟内有效．审批局工作人员绝不会向您索取此校验码，切勿告知他人．";
-			 this.sms.send(phone,content);//通过手机发送验证码;
+			 if (this.realNameAuthConfig.isUseSMSSendVerifyCode()){
+				 this.sms.send(phone,content);//通过手机发送验证码; 
+			 } else {
+				 //不用短信发送验证码，则什么事情都不需要做
+			 }
+			 
 		 }else{
 			 throw new RuntimeException("手机已经存在，不能发送验证码");
 		 }
@@ -83,9 +97,14 @@ public class RealNameAuthController {
 	@ResponseBody
 	@RequestMapping(value="/register",method=RequestMethod.POST,consumes = "application/json")
 	public void register(@RequestBody RegisterModel registerModel){
-		 boolean flag = this.verifyCode.check(registerModel.getPhone(),registerModel.getCode());//验证验证码是否正确
+		 boolean verifyCodeflag = false;
+		 if (this.realNameAuthConfig.isUseSMSSendVerifyCode()){
+			 verifyCodeflag =  this.verifyCode.check(registerModel.getPhone(),registerModel.getCode());//验证验证码是否正确
+		 }  else {
+			 verifyCodeflag = StringUtils.equals(this.realNameAuthConfig.getDefaultVerifyCode(), registerModel.getCode());
+		 }
 		 //判断验证码是否正确
-		 if(flag){
+		 if(verifyCodeflag){
 			 //执行入库操作
 			 this.realNameAuthBusiness.register(registerModel.getPhone(),registerModel.getCode());
 		 }else{
@@ -157,6 +176,7 @@ public class RealNameAuthController {
 		RealNameAuth realNameAuth = this.realNameAuthService.findByPhone(phone);//根据phone获取账号信息
 		//判断是否存在
 		if(null!=realNameAuth){
+			//参考上面的发送验证码方法进行做处理 todo
 			 String code=this.verifyCode.generate(phone,2);//产生随机四位验证码
 			 String content="门户网站，" + code + "是您本次身份校验码，" + 2 + "分钟内有效．审批局工作人员绝不会向您索取此校验码，切勿告知他人．";
 			 this.sms.send(phone,content);//通过手机发送验证码;
@@ -170,7 +190,7 @@ public class RealNameAuthController {
 	@ResponseBody
 	@RequestMapping(value="/updatePassword",method=RequestMethod.POST,consumes = "application/json")
 	public void updatePassword(@RequestBody RegisterModel registerModel){
-		//判断验证码是否正确
+		//判断验证码是否正确,参考上面的验证码处理方式，todo
 		boolean flag = this.verifyCode.check(registerModel.getPhone(),registerModel.getCode());//验证验证码是否正确
 		if(flag){
 			
