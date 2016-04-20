@@ -14,7 +14,6 @@ public class RealNameAuthConfig {
 	//使用人脸认证
 	private boolean useFaceCheck;
 	
-	
 	public boolean isUseSMSSendVerifyCode() {
 		return useSMSSendVerifyCode;
 	}

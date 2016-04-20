@@ -53,7 +53,7 @@ public class RealNameAuthController {
 	private PeopleService peopleService;
 	@Autowired
 	private FaceService faceService;
-	@Autowired @Qualifier("RealNameAuthConfig")
+	@Autowired 
 	private RealNameAuthConfig realNameAuthConfig;
 	/**
 	 * 1、发送验证码
@@ -80,7 +80,6 @@ public class RealNameAuthController {
 			 } else {
 				 //不用短信发送验证码，则什么事情都不需要做
 			 }
-			 
 		 }else{
 			 throw new RuntimeException("手机已经存在，不能发送验证码");
 		 }
