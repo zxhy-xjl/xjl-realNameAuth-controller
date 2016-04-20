@@ -142,12 +142,6 @@
 		    <version>0.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.zxhy.xjl</groupId>
 			<artifactId>xjl-webController</artifactId>
 			<version>0.0.1</version>
@@ -162,7 +156,13 @@
 			<artifactId>xjl-face</artifactId>
 			<version>0.0.1</version>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+  </dependencies>
 	<build>
 		<plugins>
 			<plugin>

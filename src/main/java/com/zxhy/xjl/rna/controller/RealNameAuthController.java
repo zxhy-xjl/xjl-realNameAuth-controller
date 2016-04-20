@@ -62,8 +62,9 @@ public class RealNameAuthController {
 	 * @return 字符串类型验证码
 	 */
 	@ResponseBody
-	@RequestMapping(value="/sendCode/{phone}",method=RequestMethod.POST,consumes = "application/json")
+	@RequestMapping(value="/sendCode/{phone}",method=RequestMethod.POST)
 	public void sendCode(@RequestParam String phone){
+		log.debug("sendCode phone:" + phone);
 		 RealNameAuth realNameAuth = this.realNameAuthService.findByPhone(phone);
 		//判断注册手机号码是否存在
 		 if(null==realNameAuth){
