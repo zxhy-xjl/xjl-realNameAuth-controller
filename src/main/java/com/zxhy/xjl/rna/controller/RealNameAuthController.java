@@ -1,16 +1,15 @@
 package com.zxhy.xjl.rna.controller;
 
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.zxhy.xjl.face.FaceService;
 import com.zxhy.xjl.notification.sms.SMS;
@@ -63,7 +62,7 @@ public class RealNameAuthController {
 	 */
 	@ResponseBody
 	@RequestMapping(value="/sendCode/{phone}",method=RequestMethod.POST)
-	public void sendCode(@RequestParam String phone){
+	public void sendCode(@PathVariable String phone){
 		log.debug("sendCode phone:" + phone);
 		 RealNameAuth realNameAuth = this.realNameAuthService.findByPhone(phone);
 		//判断注册手机号码是否存在
@@ -154,7 +153,7 @@ public class RealNameAuthController {
 	 */
 	@ResponseBody
 	@RequestMapping(value="/sendCodeForUpdatePassword/{phone}",method=RequestMethod.POST,consumes = "application/json")
-	public void sendCodeForUpdatePassword(@RequestParam String phone){
+	public void sendCodeForUpdatePassword(@PathVariable String phone){
 		RealNameAuth realNameAuth = this.realNameAuthService.findByPhone(phone);//根据phone获取账号信息
 		//判断是否存在
 		if(null!=realNameAuth){
@@ -183,7 +182,7 @@ public class RealNameAuthController {
 	 */
 	@ResponseBody
 	@RequestMapping(value="/realNameAuth/{phone}",method=RequestMethod.GET)
-	public RealNameAuthTask getRealNameStatus(@RequestParam String phone){
+	public RealNameAuthTask getRealNameStatus(@PathVariable String phone){
 		return this.realNameAuthBusiness.getRealNameAuthTask(phone);
 	}
 }

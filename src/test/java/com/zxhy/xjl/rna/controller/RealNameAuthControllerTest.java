@@ -38,7 +38,7 @@ public class RealNameAuthControllerTest extends BaseControllerTest{
 	
 	@Test
 	public void sendCode(){
-		String uri = "/sendCode/1";
+		String uri = "/realNameAuth/sendCode/13815892591";
 		String resp = this.mockPost(uri, null);
 		System.out.println("logon:" + resp);
 	}
