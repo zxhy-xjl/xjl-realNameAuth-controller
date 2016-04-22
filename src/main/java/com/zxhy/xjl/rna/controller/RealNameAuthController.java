@@ -1,16 +1,21 @@
 package com.zxhy.xjl.rna.controller;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.zxhy.xjl.face.FaceService;
 import com.zxhy.xjl.notification.sms.SMS;
 import com.zxhy.xjl.notification.verifyCode.VerifyCode;
@@ -92,7 +97,7 @@ public class RealNameAuthController {
 	 */
 	@ResponseBody
 	@RequestMapping(value="/register",method=RequestMethod.POST,consumes = "application/json")
-	public void register(@RequestBody RegisterModel registerModel){
+	public boolean register(@RequestBody RegisterModel registerModel){
 		 boolean verifyCodeflag = false;
 		 if (this.realNameAuthConfig.isUseSMSSendVerifyCode()){
 			 verifyCodeflag =  this.verifyCode.check(registerModel.getPhone(),registerModel.getCode());//验证验证码是否正确
@@ -106,6 +111,7 @@ public class RealNameAuthController {
 		 }else{
 			 throw new RuntimeException("验证码已经过期，请重新输入");
 		 }
+		 return verifyCodeflag;
 	}
 	/**
 	 * 3、核名
@@ -159,9 +165,6 @@ public class RealNameAuthController {
 		}
 	}
 	
-	
-	
-	
 	/**
 	 * 6、发送重置密码的验证码
 	 * @return
@@ -200,5 +203,17 @@ public class RealNameAuthController {
 	@RequestMapping(value="/realNameAuth/{phone}",method=RequestMethod.GET)
 	public RealNameAuthTask getRealNameStatus(@PathVariable String phone){
 		return this.realNameAuthBusiness.getRealNameAuthTask(phone);
+	}
+	/**
+	 * 上传文件
+	 */
+	@RequestMapping(value="/doUploadFile")
+	public void doUploadFile(@RequestParam(value = "file", required = false) MultipartFile file,@RequestParam(name="phone") String phone,HttpServletRequest request,HttpServletResponse response){
+		 String outPath = request.getSession().getServletContext().getRealPath("/");// 文件保存文件夹，也可自定为绝对路径
+		 if(null!=file){
+			 this.realNameAuthFileService.doUploadImage(file, outPath, phone+"sfz");//身份证照片
+		 }else{
+			 throw new RuntimeException("上传文件为空");
+		 }
 	}
 }
