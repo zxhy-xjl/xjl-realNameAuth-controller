@@ -22,6 +22,7 @@ import com.zxhy.xjl.notification.verifyCode.VerifyCode;
 import com.zxhy.xjl.people.PeopleService;
 import com.zxhy.xjl.rna.business.RealNameAuthBusiness;
 import com.zxhy.xjl.rna.business.RealNameAuthTask;
+import com.zxhy.xjl.rna.controller.model.AdminLogonModel;
 import com.zxhy.xjl.rna.controller.model.CheckFaceModel;
 import com.zxhy.xjl.rna.controller.model.CheckIDModel;
 import com.zxhy.xjl.rna.controller.model.LogonModel;
@@ -216,4 +217,25 @@ public class RealNameAuthController {
 			 throw new RuntimeException("上传文件为空");
 		 }
 	}
+	/**
+	 * 9、管理员登陆
+	 * 
+	 */
+	@ResponseBody
+	@RequestMapping(value="/adminLogon",method=RequestMethod.POST,consumes = "application/json")
+	public AdminLogonModel adminLogon(@RequestBody AdminLogonModel adminLogonModel){
+		log.debug("logon phone:" + adminLogonModel.getAccountNumber()+ " passwd:" + adminLogonModel.getPasswd());
+		boolean logonFlag = this.realNameAuthBusiness.adminLogon(adminLogonModel.getAccountNumber(), adminLogonModel.getPasswd());
+		if (logonFlag){
+			AdminLogonModel task =new AdminLogonModel();
+			task.setAccountNumber(adminLogonModel.getAccountNumber());
+			return task;
+		} else {
+			return new AdminLogonModel();
+		}
+	}
+	/**
+	 * 10、人工审核
+	 * 
+	 */
 }
