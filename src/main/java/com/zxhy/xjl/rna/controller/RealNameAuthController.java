@@ -119,7 +119,7 @@ public class RealNameAuthController {
 	 */
 	@ResponseBody
 	@RequestMapping(value="/checkID",method=RequestMethod.POST,consumes = "application/json")
-	public void checkID(@RequestBody CheckIDModel checkIDModel){
+	public boolean checkID(@RequestBody CheckIDModel checkIDModel){
 		boolean checkIdFlag=this.peopleService.checkID(checkIDModel.getId(), checkIDModel.getName());
 		if (checkIdFlag){
 			 com.zxhy.xjl.rna.business.RealNameAuthTask task  = this.realNameAuthBusiness.getRealNameAuthTask(checkIDModel.getPhone());//获取taskID
@@ -127,16 +127,19 @@ public class RealNameAuthController {
 		} else {
 			throw new RuntimeException("身份证号码和姓名核实失败");
 		}
+		return checkIdFlag;
 	}
 	/**
 	 * 4、刷脸
 	 */
 	@ResponseBody
 	@RequestMapping(value="/checkFace",method=RequestMethod.POST,consumes = "application/json")
-	public void checkFace(@RequestBody CheckFaceModel checkFaceModel){
-		boolean checkFaceFlag=this.faceService.checkFace(checkFaceModel.getIdCode(), checkFaceModel.getFace());
+	public boolean checkFace(@RequestBody CheckFaceModel checkFaceModel,HttpServletRequest request,HttpServletResponse response){
+		 String faceURL = request.getSession().getServletContext().getRealPath("/");// 文件保存文件夹，也可自定为绝对路径
+		 this.realNameAuthFileService.Base64StringToImage(checkFaceModel.getBase64Face(), faceURL,checkFaceModel.getPhone()+".png");//将照片存在某一个路径
+		 checkFaceModel.setFace(checkFaceModel.getBase64Face().getBytes());
+		 boolean checkFaceFlag=this.faceService.checkFace(checkFaceModel.getIdCode(), checkFaceModel.getFace());
 		//把拍照图片存储在某个url中
-		String faceURL = null;
 		checkFaceModel.setFaceUrl(faceURL);
 		if (checkFaceFlag){
 			 com.zxhy.xjl.rna.business.RealNameAuthTask task  = this.realNameAuthBusiness.getRealNameAuthTask(checkFaceModel.getPhone());//获取taskID
@@ -144,6 +147,7 @@ public class RealNameAuthController {
 		} else {
 			throw new RuntimeException("人脸识别识别");
 		}
+		return checkFaceFlag;
 	}
 	/**
 	 * 5、登陆
@@ -177,9 +181,20 @@ public class RealNameAuthController {
 		//判断是否存在
 		if(null!=realNameAuth){
 			//参考上面的发送验证码方法进行做处理 todo
-			 String code=this.verifyCode.generate(phone,2);//产生随机四位验证码
+			 String code=this.realNameAuthConfig.getDefaultVerifyCode();//获取默认验证码
+			 if(this.realNameAuthConfig.isUseSMSSendVerifyCode()){
+				 log.debug("使用短信发送验证码,这里随机产生一个验证码");
+				 code = this.verifyCode.generate(phone, 2);
+			 }else{
+				 log.debug("不使用短信发送验证码,默认验证码为:"+this.realNameAuthConfig.getDefaultVerifyCode());
+			 }
 			 String content="门户网站，" + code + "是您本次身份校验码，" + 2 + "分钟内有效．审批局工作人员绝不会向您索取此校验码，切勿告知他人．";
-			 this.sms.send(phone,content);//通过手机发送验证码;
+			 if(this.realNameAuthConfig.isUseSMSSendVerifyCode()){
+				 this.sms.send(phone,content);//通过手机发送验证码;
+			 }else{
+				 //不用短信发送验证码,什么事情都不用操作
+			 }
+			
 		}else{
 			throw new RuntimeException("手机号码不存在");
 		}
@@ -189,13 +204,21 @@ public class RealNameAuthController {
 	 */
 	@ResponseBody
 	@RequestMapping(value="/updatePassword",method=RequestMethod.POST,consumes = "application/json")
-	public void updatePassword(@RequestBody RegisterModel registerModel){
+	public boolean updatePassword(@RequestBody RegisterModel registerModel){
 		//判断验证码是否正确,参考上面的验证码处理方式，todo
-		boolean flag = this.verifyCode.check(registerModel.getPhone(),registerModel.getCode());//验证验证码是否正确
+		boolean flag = false;
+		if(this.realNameAuthConfig.isUseSMSSendVerifyCode()){
+			flag= this.verifyCode.check(registerModel.getPhone(),registerModel.getCode());//验证验证码是否正确
+		}else{
+			//不用短信接收验证码则使用默认验证码
+			flag=true;
+		}
 		if(flag){
-			
+			//执行修改密码操作
+			this.realNameAuthService.updatePassword(registerModel.getPhone(), registerModel.getPasswd());
 			log.debug("phone:"+registerModel.getPhone()+"password:"+registerModel.getPasswd()+"code:"+registerModel.getCode());
 		}
+		return flag;
 	}
 	/**
 	 * 8、得到当前认证状态
@@ -212,7 +235,7 @@ public class RealNameAuthController {
 	public void doUploadFile(@RequestParam(value = "file", required = false) MultipartFile file,@RequestParam(name="phone") String phone,HttpServletRequest request,HttpServletResponse response){
 		 String outPath = request.getSession().getServletContext().getRealPath("/");// 文件保存文件夹，也可自定为绝对路径
 		 if(null!=file){
-			 this.realNameAuthFileService.doUploadImage(file, outPath, phone+"sfz");//身份证照片
+			 this.realNameAuthFileService.doUploadFile(file, outPath, phone+"sfz");//身份证照片
 		 }else{
 			 throw new RuntimeException("上传文件为空");
 		 }

@@ -13,6 +13,8 @@ public class CheckFaceModel {
 	 */
 	private byte[] face;
 	private String faceUrl;
+	private String  base64Face;
+	
 	public String getIdCode() {
 		return idCode;
 	}
@@ -38,6 +40,10 @@ public class CheckFaceModel {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-	
-
+	public String getBase64Face() {
+		return base64Face;
+	}
+	public void setBase64Face(String base64Face) {
+		this.base64Face = base64Face;
+	}
 }
