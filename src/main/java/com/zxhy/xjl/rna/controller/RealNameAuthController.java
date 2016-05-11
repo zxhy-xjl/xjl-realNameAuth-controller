@@ -1,8 +1,13 @@
 package com.zxhy.xjl.rna.controller;
 
+import java.io.IOException;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import com.zxhy.xjl.face.FaceService;
 import com.zxhy.xjl.notification.sms.SMS;
 import com.zxhy.xjl.notification.verifyCode.VerifyCode;
@@ -28,6 +34,7 @@ import com.zxhy.xjl.rna.controller.model.CheckIDModel;
 import com.zxhy.xjl.rna.controller.model.LogonModel;
 import com.zxhy.xjl.rna.controller.model.RegisterModel;
 import com.zxhy.xjl.rna.fileService.RealNameAuthFileService;
+import com.zxhy.xjl.rna.model.ManualAudit;
 import com.zxhy.xjl.rna.model.RealNameAuth;
 import com.zxhy.xjl.rna.service.RealNameAuthService;
 /**
@@ -145,7 +152,7 @@ public class RealNameAuthController {
 			 com.zxhy.xjl.rna.business.RealNameAuthTask task  = this.realNameAuthBusiness.getRealNameAuthTask(checkFaceModel.getPhone());//获取taskID
 			 this.realNameAuthBusiness.checkFace(checkFaceModel.getPhone(), checkFaceModel.getFaceUrl(), task.getTaskId());
 		} else {
-			throw new RuntimeException("人脸识别识别");
+			throw new RuntimeException("人脸识别失败");
 		}
 		return checkFaceFlag;
 	}
@@ -258,7 +265,39 @@ public class RealNameAuthController {
 		}
 	}
 	/**
-	 * 10、人工审核
+	 * 10、获取人工审核数据
+	 * @throws IOException 
 	 * 
 	 */
+	@RequestMapping(value="/manualAudit",method=RequestMethod.POST,consumes = "application/json")
+	public  void manualAudit(@RequestBody RealNameAuthTask realNameAuthTask,HttpServletResponse response) throws IOException{
+		log.debug("审核的状态:" + realNameAuthTask.getProcessName());
+		 List<ManualAudit> list=this.realNameAuthBusiness.manualAudit(realNameAuthTask.getProcessName());
+		 JSONArray jsonArray = new JSONArray();
+		 if(null!=list){
+			 for(int i=0; i<list.size(); i++){
+				 JSONObject json=new JSONObject();
+				 json.put("face_url", list.get(i).getFace_url());
+				 json.put("id_code", list.get(i).getId_code());
+				 json.put("id_photo_url", list.get(i).getId_photo_url());
+				 json.put("phone", list.get(i).getPhone());
+				 json.put("processname", list.get(i).getProcessname());
+				 json.put("id_name", list.get(i).getId_name());
+				 jsonArray.put(json);
+				}
+		 }
+		 response.setContentType("text/json; charset=UTF-8");
+		 response.getWriter().print(jsonArray.toString());
+	}
+	/**
+	 * 11、修改审核状态
+	 * @throws IOException 
+	 * 
+	 */
+	@RequestMapping(value="/manualAuditState",method=RequestMethod.POST,consumes = "application/json")
+	public  String manualAuditState(@RequestBody RealNameAuthTask realNameAuthTask,HttpServletResponse response) throws IOException{
+		log.debug("审核人:" + realNameAuthTask.getPhone()+" 审核状态"+realNameAuthTask.getProcessName());
+		this.realNameAuthBusiness.manualAuditState(realNameAuthTask.getPhone(), realNameAuthTask.getProcessName());
+		return "1";
+	}
 }
